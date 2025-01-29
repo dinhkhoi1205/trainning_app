@@ -1,0 +1,133 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<h1>STAT TRAINING POINTS</h1>
+
+<div style="width: 60%; margin-bottom = 60px;">
+    <h2>By faculty</h2>
+    <canvas id="facultyChart"></canvas>
+</div>
+
+<div style="width: 60%; margin-bottom = 60px;">
+    <h2>By class</h2>
+    <canvas id="classChart"></canvas>
+</div>
+
+<div style="width: 60%; margin-bottom = 60px;">
+    <h2>By achievement</h2>
+    <canvas id="achievementChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    //Data for faculty
+    let student_faculty = [];
+    let points_faculty = [];
+    let label_faculty = [];
+
+    {% for s in stats_by_faculty %}
+    label_faculty.push('{{ s.faculty }}')
+    student_faculty.push({{ s.total_students }})
+    points_faculty.push({{ s.total_points }})
+    {% endfor %}
+
+    //Data for class
+    let student_class = [];
+    let points_class = [];
+    let label_class = [];
+
+    {% for s in stats_by_class %}
+    label_class.push('{{ s.class_name }}')
+    student_class.push({{ s.total_students }})
+    points_class.push({{ s.total_points }})
+    {% endfor %}
+
+    //Achievement data
+    let student_achievement = [];
+    let label_achievement = [];
+
+    {% for s in stats_by_achievement %}
+    label_achievement.push('{{ s.achievement }}')
+    student_achievement.push({{ s.total_students }})
+    {% endfor %}
+
+    window.onload = function() {
+        //Faculty chart
+      const facultyCtx = document.getElementById('facultyChart').getContext('2d');
+        new Chart(facultyCtx, {
+            type: 'bar',
+            data: {
+              labels: label_faculty,
+              datasets: [{
+                label: 'Total students',
+                data: student_faculty,
+                backgroundColor: 'red',
+                borderWidth: 1
+              },
+              {
+                label: 'Total points',
+                data: points_faculty,
+                backgroundColor: 'blue',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+
+      //Class chart
+      const classCtx = document.getElementById('classChart').getContext('2d');
+        new Chart(classCtx, {
+            type: 'bar',
+            data: {
+              labels: label_class,
+              datasets: [{
+                label: 'Total students',
+                data: student_class,
+                backgroundColor: 'red',
+                borderWidth: 1
+              },
+              {
+                label: 'Total points',
+                data: points_class,
+                backgroundColor: 'blue',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+
+      //Achievement chart
+      const achievementCtx = document.getElementById('achievementChart').getContext('2d');
+        new Chart(achievementCtx, {
+            type: 'bar',
+            data: {
+              labels: label_achievement,
+              datasets: [{
+                label: 'Total students',
+                data: student_achievement,
+                backgroundColor: ['red', 'green', 'blue', 'yellow', 'orange'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+    }
+</script>
+{% endblock %}
