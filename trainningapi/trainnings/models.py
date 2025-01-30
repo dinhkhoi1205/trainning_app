@@ -1,11 +1,8 @@
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
 from cloudinary.models import CloudinaryField
-
-
-class User(AbstractUser):
-    avatar = CloudinaryField(null=True)
 
 
 class BaseModel(models.Model):
@@ -16,6 +13,16 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+
+class Faculty(BaseModel):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class User(AbstractUser):
+    avatar = CloudinaryField(null=True)
 
 # Save active category
 class Category(BaseModel):
@@ -42,7 +49,7 @@ class Activity(BaseModel):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     criteria = models.CharField(max_length=1, choices=CRITERIA_CHOICES, default='1')  # Choose criteria to add point
-    tags = models.ManyToManyField('Tag') #Add tags for activities
+    tags = models.ManyToManyField('Tag')  # Add tags for activities
 
     def __str__(self):
         return self.title
@@ -50,14 +57,6 @@ class Activity(BaseModel):
 
 # Student can participate many activities
 class Participation(BaseModel):
-    FACULTY_CHOICES = [
-        ('TE', 'Technology'),
-        ('LA', 'Law'),
-        ('EL', 'English language'),
-        ('TOUR', 'Tourist'),
-        ('HOM', 'Hotel management'),
-    ]
-
     ACHIEVEMENT_CHOICES = [
         ('EXCELLENT', 'Excellent'),
         ('GOOD', 'Good'),
@@ -65,18 +64,43 @@ class Participation(BaseModel):
         ('BELOW AVERAGE', 'Below average'),
         ('WEAK', 'Weak'),
     ]
-    user = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, blank=True)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     is_attended = models.BooleanField(default=False)  # Is attend ?
     image = models.ImageField(upload_to='proofs/%Y/%m')  # Proof have attended
     verified = models.BooleanField(default=False)  # Assistant confirm
     class_name = models.CharField(max_length=50, null=True)
-    faculty = models.CharField(max_length=10, choices=FACULTY_CHOICES, null=True, blank=True)
     achievement = models.CharField(max_length=15, choices=ACHIEVEMENT_CHOICES, null=True, blank=True)
     point = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user} - {self.activity} - {self.faculty}"
+        return f"{self.user} - {self.activity}"
+
+
+class TrainingPoint(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    criteria = models.CharField(max_length=1, choices=Activity.CRITERIA_CHOICES)
+    point = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.activity.title} - {self.criteria}"
+
+
+class MissingPointRequest(BaseModel):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    proof_image = models.ImageField(upload_to='missing_proofs/%Y/%m')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.activity.title}"
 
 
 class Tag(BaseModel):
@@ -85,16 +109,16 @@ class Tag(BaseModel):
 
 class Interaction(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
 
 
 class Comment(Interaction):
-    content = models.CharField(max_length=255, null=False)
+    content = models.TextField()
 
 
 class Like(Interaction):
     class Meta:
-        unique_together = ('user', 'participation')
+        unique_together = ('user', 'activity')
