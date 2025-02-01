@@ -21,13 +21,11 @@
 <script>
     //Data for faculty
     let student_faculty = [];
-    let points_faculty = [];
     let label_faculty = [];
 
     {% for s in stats_by_faculty %}
     label_faculty.push('{{ s.faculty }}')
     student_faculty.push({{ s.total_students }})
-    points_faculty.push({{ s.total_points }})
     {% endfor %}
 
     //Data for class
@@ -44,10 +42,12 @@
     //Achievement data
     let student_achievement = [];
     let label_achievement = [];
+    let avg_points = [];
 
     {% for s in stats_by_achievement %}
     label_achievement.push('{{ s.achievement }}')
     student_achievement.push({{ s.total_students }})
+     avg_points.push({{ s.average_points|default:0 }});
     {% endfor %}
 
     window.onload = function() {
@@ -61,12 +61,6 @@
                 label: 'Total students',
                 data: student_faculty,
                 backgroundColor: 'red',
-                borderWidth: 1
-              },
-              {
-                label: 'Total points',
-                data: points_faculty,
-                backgroundColor: 'blue',
                 borderWidth: 1
               }]
             },
@@ -90,12 +84,6 @@
                 data: student_class,
                 backgroundColor: 'red',
                 borderWidth: 1
-              },
-              {
-                label: 'Total points',
-                data: points_class,
-                backgroundColor: 'blue',
-                borderWidth: 1
               }]
             },
             options: {
@@ -116,6 +104,12 @@
               datasets: [{
                 label: 'Total students',
                 data: student_achievement,
+                backgroundColor: ['red', 'green', 'blue', 'yellow', 'orange'],
+                borderWidth: 1
+              },
+              {
+                label: 'Average Point',
+                data: avg_points,
                 backgroundColor: ['red', 'green', 'blue', 'yellow', 'orange'],
                 borderWidth: 1
               }]

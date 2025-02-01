@@ -57,6 +57,20 @@ class Activity(BaseModel):
 
 # Student can participate many activities
 class Participation(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, blank=True)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    registered_at = models.DateTimeField(auto_now_add=True)
+    is_attended = models.BooleanField(default=False)  # Is attend ?
+    image = models.ImageField(upload_to='proofs/%Y/%m')  # Proof have attended
+    verified = models.BooleanField(default=False)  # Assistant confirm
+    class_name = models.CharField(max_length=50, null=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.activity}"
+
+
+class TrainingPoint(BaseModel):
     ACHIEVEMENT_CHOICES = [
         ('EXCELLENT', 'Excellent'),
         ('GOOD', 'Good'),
@@ -65,24 +79,10 @@ class Participation(BaseModel):
         ('WEAK', 'Weak'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    faculty = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, blank=True)
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    is_attended = models.BooleanField(default=False)  # Is attend ?
-    image = models.ImageField(upload_to='proofs/%Y/%m')  # Proof have attended
-    verified = models.BooleanField(default=False)  # Assistant confirm
-    class_name = models.CharField(max_length=50, null=True)
-    achievement = models.CharField(max_length=15, choices=ACHIEVEMENT_CHOICES, null=True, blank=True)
-    point = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f"{self.user} - {self.activity}"
-
-
-class TrainingPoint(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     criteria = models.CharField(max_length=1, choices=Activity.CRITERIA_CHOICES)
     point = models.IntegerField(default=0)
+    achievement = models.CharField(max_length=15, choices=ACHIEVEMENT_CHOICES, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.activity.title} - {self.criteria}"
@@ -105,6 +105,9 @@ class MissingPointRequest(BaseModel):
 
 class Tag(BaseModel):
     name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Interaction(BaseModel):

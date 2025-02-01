@@ -28,14 +28,16 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         data = validated_data.copy()
-        u = User(**data)
-        u.set_password(u.password)
+        password = data.pop('password', None)
+        u = User(**data)  # Tạo user
+        if password:
+            u.set_password(password)
         u.save()
         return u
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['avatar'] = instance.avatar.url if instance.avatar.url else ''
+        data['avatar'] = instance.avatar.url if instance.avatar else ''
         return data
 
     class Meta:
@@ -70,8 +72,8 @@ class ParticipationSerializer(BaseSerializer):
 
     class Meta:
         model = Participation
-        fields = ['id', 'user', 'faculty', 'image', 'class_name',
-                  'activity', 'is_attended', 'verified', 'point']
+        fields = ['id', 'user', 'activity', 'is_attended', 'verified', 'faculty', 'class_name',
+                  'registered_at']
 
 
 class ParticipationDetailsSerializer(ParticipationSerializer):
@@ -88,7 +90,7 @@ class TrainingPointSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TrainingPoint
-        fields = ['id', 'user', 'activity', 'criteria', 'point']
+        fields = ['id', 'user', 'activity', 'criteria', 'point', 'achievement']
 
 
 class MissingPointRequestSerializer(serializers.ModelSerializer):

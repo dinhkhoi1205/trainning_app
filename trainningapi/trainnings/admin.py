@@ -23,7 +23,6 @@ class MyAppAdmin(admin.AdminSite):
             Participation.objects.values('faculty')
             .annotate(
                 total_students=Count('id'),
-                total_points=Sum('point'),
             )
             .order_by('faculty')
         )
@@ -31,13 +30,12 @@ class MyAppAdmin(admin.AdminSite):
             Participation.objects.values('class_name')
             .annotate(
                 total_students=Count('id'),
-                total_points=Sum('point'),
             )
             .order_by('class_name')
         )
 
         stats_by_achievement = (
-            Participation.objects.values('achievement')
+            TrainingPoint.objects.values('achievement')
             .annotate(
                 total_students=Count('id'),
                 average_points=Avg('point'),
@@ -87,18 +85,15 @@ class ActivityAdmin(admin.ModelAdmin):
 
 
 class ParticipationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'faculty', 'class_name', 'activity', 'point',
-                    'achievement', 'is_attended', 'verified', 'created_date']
-    search_fields = ['user', 'class_name']
+    list_display = ['id', 'user', 'faculty', 'class_name', 'activity',
+                    'is_attended', 'verified', 'registered_at', 'created_date']
+    search_fields = ['user__username', 'class_name']
     list_filter = ['is_attended', 'verified', 'created_date']
     ordering = ['created_date']
     readonly_fields = ['display_proof']
 
     def display_proof(self, proofs):
         return mark_safe(f"<img src='/static/{proofs.image.name}' width = '120' />")
-
-    def activity_max_point(self, participation):
-        return participation.activity.max_point
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -107,10 +102,13 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class TrainingPointAdmin(admin.ModelAdmin):
-    list_display = ['user', 'activity', 'criteria', 'point', 'created_date']
+    list_display = ['user', 'activity', 'criteria', 'point', 'display_activity_points', 'created_date']
     search_fields = ['user__username', 'activity__title']
     list_filter = ['criteria', 'created_date']
     ordering = ['created_date']
+
+    def display_activity_points(self, obj):
+        return obj.activity.max_point
 
 
 class MissingPointRequestAdmin(admin.ModelAdmin):
