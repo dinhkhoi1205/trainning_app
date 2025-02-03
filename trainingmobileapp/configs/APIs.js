@@ -1,9 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = 'https://dinhkhoi1205.pythonanywhere.com';
+const BASE_URL = 'https://dinhkhoi1205.pythonanywhere.com/';
 
 export const endpoints = {
-    'categories' : '/categories/'
+    'categories' : '/categories/',
+    'activities' : '/activities/',
 }
 
 export default axios.create({
