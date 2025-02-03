@@ -87,12 +87,6 @@ class ParticipationViewSet(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = paginator.ItemPaginator
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:  # If is admin or assistant
-            return Participation.objects.filter(active=True)
-        return Participation.objects.filter(user=user, active=True)  # If student, can see by themselves
-
 
 class ActivityDetailsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = Activity.objects.prefetch_related('tags').filter(active=True)
