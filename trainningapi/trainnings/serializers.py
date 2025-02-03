@@ -70,7 +70,7 @@ class ParticipationSerializer(BaseSerializer):
 
     class Meta:
         model = Participation
-        fields = ['id', 'user', 'faculty', 'image',
+        fields = ['id', 'user', 'image',
                   'activity', 'is_attended', 'verified', 'point']
 
 

@@ -1,4 +1,3 @@
-
 from collections import defaultdict
 from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
@@ -15,7 +14,6 @@ import csv
 from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from rest_framework.parsers import MultiPartParser
-
 
 
 # Create your views here.
@@ -68,17 +66,18 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
         writer.writerow(['User ID', 'Username', 'Class', 'Faculty', 'Participation Points', 'Achievement'])
 
         for participation in participations:
+            user = participation.user
+            training_point = TrainingPoint.objects.filter(user=user).first()
 
-                row = [
-                    participation.user.id,
-                    participation.user.username,
-                    participation.user.trainingpoint.class_name
-                    if hasattr(participation.user, 'trainingpoint') else "N/A",
-                    participation.faculty.name if participation.faculty else "N/A",
-                    participation.point,
-                    participation.achievement
-                ]
-                writer.writerow(row)
+            row = [
+                user.id,
+                user.username,
+                training_point.class_name if training_point else "N/A",
+                training_point.faculty.name if training_point and training_point.faculty else "N/A",
+                participation.point if participation.point else "N/A",
+                participation.achievement if participation.achievement else "N/A"
+            ]
+            writer.writerow(row)
 
         return response
 
@@ -88,6 +87,12 @@ class ParticipationViewSet(viewsets.ViewSet, generics.ListAPIView):
     serializer_class = serializers.ParticipationSerializer
     pagination_class = paginator.ItemPaginator
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:  # If is admin or assistant
+            return Participation.objects.filter(active=True)
+        return Participation.objects.filter(user=user, active=True)  # If student, can see by themselves
 
 
 class ActivityDetailsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):

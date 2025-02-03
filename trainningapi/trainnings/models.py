@@ -70,7 +70,6 @@ class Participation(BaseModel):
         ('WEAK', 'Weak'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    faculty = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, blank=True)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     is_attended = models.BooleanField(default=False)  # Is attend ?
     image = models.ImageField(upload_to='proofs/%Y/%m')  # Proof have attended

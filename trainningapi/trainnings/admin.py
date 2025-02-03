@@ -18,7 +18,7 @@ class MyAppAdmin(admin.AdminSite):
     def stats(self, request):
         # Stats training points as faculty, class, achievement
         stats_by_faculty = (
-            Participation.objects.values('faculty__name')
+            TrainingPoint.objects.values('faculty__name')
             .annotate(
                 total_students=Count('id'),
             )
@@ -73,7 +73,7 @@ class ActivityAdmin(admin.ModelAdmin):
 
 
 class ParticipationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'faculty', 'activity', 'point',
+    list_display = ['id', 'user', 'activity', 'point',
                     'achievement', 'is_attended', 'verified', 'created_date']
     search_fields = ['user', ]
     list_filter = ['is_attended', 'verified', 'created_date']
@@ -93,7 +93,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class TrainingPointAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'point', 'created_date', 'achievement']
+    list_display = ['id', 'user','faculty', 'point', 'created_date', 'achievement']
     search_fields = ['user__username']
     list_filter = ['created_date', 'user', 'user__username']
     ordering = ['created_date']
