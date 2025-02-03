@@ -53,29 +53,28 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
         return Response(
             serializers.ParticipationSerializer(participation, many=True, context={'request': request}).data)
 
-    @action(methods=['get'], url_path='export-csv', detail=True)
-    def export_csv(self, request, pk=None):
-        activity = self.get_object()
-        participations = activity.participation_set.filter(is_attended=True)
+    @action(methods=['get'], url_path='export-csv', detail=False)
+    def export_csv(self, request):
+        participations = Participation.objects.filter(is_attended=True)
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="activity_{activity.id}_participations.csv"'
+        response['Content-Disposition'] = f'attachment; filename="all_activities_participations.csv"'
 
         writer = csv.writer(response)
 
-        writer.writerow(['User ID', 'Username', 'Class', 'Faculty', 'Participation Points', 'Achievement'])
+        writer.writerow(['Activity ID', 'Activity Title', 'User ID', 'Username', 'Class', 'Faculty', 'Points'])
 
         for participation in participations:
-            user = participation.user
-            training_point = TrainingPoint.objects.filter(user=user).first()
+            training_point = TrainingPoint.objects.filter(user=participation.user).first()
 
             row = [
-                user.id,
-                user.username,
+                participation.activity.id,
+                participation.activity.title,
+                participation.user.id,
+                participation.user.username,
                 training_point.class_name if training_point else "N/A",
                 training_point.faculty.name if training_point and training_point.faculty else "N/A",
-                participation.point if participation.point else "N/A",
-                participation.achievement if participation.achievement else "N/A"
+                participation.point if participation.point else "N/A"
             ]
             writer.writerow(row)
 
