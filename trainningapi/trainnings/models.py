@@ -1,8 +1,8 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
 from cloudinary.models import CloudinaryField
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
 
 
 class BaseModel(models.Model):
@@ -18,8 +18,8 @@ class Faculty(BaseModel):
     name = models.CharField(max_length=100, unique=True)
 
     class Meta:
-        verbose_name = 'faculty'
-        verbose_name_plural = 'Faculty'
+        verbose_name = 'khoa'
+        verbose_name_plural = 'Khoa'
 
     def __str__(self):
         return self.name
@@ -27,6 +27,7 @@ class Faculty(BaseModel):
 
 class User(AbstractUser):
     avatar = CloudinaryField(null=True)
+
 
 # Save active category
 class Category(BaseModel):
@@ -39,11 +40,11 @@ class Category(BaseModel):
 # Activity detail in category
 class Activity(BaseModel):
     CRITERIA_CHOICES = [
-        ('1', 'Criteria 1'),
-        ('2', 'Criteria 2'),
-        ('3', 'Criteria 3'),
-        ('4', 'Criteria 4'),
-        ('5', 'Criteria 5'),
+        ('1', 'Điều 1'),
+        ('2', 'Điều 2'),
+        ('3', 'Điều 3'),
+        ('4', 'Điều 4'),
+        ('5', 'Điều 5'),
     ]
     title = models.CharField(max_length=255)  # Name activity
     description = RichTextField(null=True)  # Activity description
@@ -61,14 +62,22 @@ class Activity(BaseModel):
 
 # Student can participate many activities
 class Participation(BaseModel):
+    ACHIEVEMENT_CHOICES = [
+        ('EXCELLENT', 'Excellent'),
+        ('GOOD', 'Good'),
+        ('AVERAGE', 'Average'),
+        ('BELOW AVERAGE', 'Below average'),
+        ('WEAK', 'Weak'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     faculty = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, blank=True)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    registered_at = models.DateTimeField(auto_now_add=True)
     is_attended = models.BooleanField(default=False)  # Is attend ?
-    image = models.ImageField(upload_to='proofs/%Y/%m', null= True, blank=True)  # Proof have attended
+    image = models.ImageField(upload_to='proofs/%Y/%m')  # Proof have attended
     verified = models.BooleanField(default=False)  # Assistant confirm
-    class_name = models.CharField(max_length=50, null=True)
+    achievement = models.CharField(max_length=15, choices=ACHIEVEMENT_CHOICES, null=True, blank=True)
+    point = models.IntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(15)], null=True,
+                                blank=True)
 
     def __str__(self):
         return f"{self.user} - {self.activity}"
@@ -76,23 +85,19 @@ class Participation(BaseModel):
 
 class TrainingPoint(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    faculty = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, blank=True)
-    participation = models.ForeignKey(Participation, on_delete=models.SET_NULL, null=True,
-                                      blank=True)
+    class_name = models.CharField(max_length=50, null=True)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, null=True, blank=True)
     criteria1 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
-    criteria2 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    criteria2 = models.IntegerField(default=25, validators=[MinValueValidator(1), MaxValueValidator(50)])
     criteria3 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
-    criteria4 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
-    criteria5 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
-    point = models.IntegerField(default=0, validators=[MinValueValidator(1), MaxValueValidator(100)])
-
+    criteria4 = models.IntegerField(default=25, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    criteria5 = models.IntegerField(default=10, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    point = models.IntegerField(default=100, validators=[MinValueValidator(1), MaxValueValidator(100)])
+    achievement = models.CharField(max_length=50, null=True, default='EXCELLENT')
 
     class Meta:
-        verbose_name = 'students training point'
-        verbose_name_plural = 'Students Training Point'
-
-    def __str__(self):
-        return f"{self.user.username}"
+        verbose_name = 'điểm rèn luyện sinh viên'
+        verbose_name_plural = 'điểm rèn luyện sinh viên'
 
     @property
     def achievement(self):
@@ -102,10 +107,13 @@ class TrainingPoint(BaseModel):
             return 'GOOD'
         elif self.point >= 50:
             return 'AVERAGE'
-        elif self.point >= 30:
+        elif self.point >= 40:
             return 'BELOW AVERAGE'
         else:
             return 'WEAK'
+
+    def __str__(self):
+        return f"{self.user.username}"
 
 
 class MissingPointRequest(BaseModel):
@@ -116,7 +124,7 @@ class MissingPointRequest(BaseModel):
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    proof_image = models.ImageField(upload_to='missing_proofs/%Y/%m', null=True, blank=True)
+    image = models.ImageField(upload_to='missing_proofs/%Y/%m')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
 
     def __str__(self):

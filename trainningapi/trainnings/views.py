@@ -1,3 +1,4 @@
+
 from collections import defaultdict
 from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
@@ -14,6 +15,7 @@ import csv
 from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from rest_framework.parsers import MultiPartParser
+
 
 
 # Create your views here.
@@ -63,19 +65,18 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
 
         writer = csv.writer(response)
 
-        writer.writerow(['User ID', 'Username', 'Class', 'Faculty', 'Points'])
-
+        writer.writerow(['User ID', 'Username', 'Class', 'Faculty', 'Participation Points', 'Achievement'])
 
         for participation in participations:
 
-            training_point = TrainingPoint.objects.filter(participation=participation).first()
-            if training_point:
                 row = [
                     participation.user.id,
                     participation.user.username,
-                    participation.class_name,
+                    participation.user.trainingpoint.class_name
+                    if hasattr(participation.user, 'trainingpoint') else "N/A",
                     participation.faculty.name if participation.faculty else "N/A",
-                    training_point.point
+                    participation.point,
+                    participation.achievement
                 ]
                 writer.writerow(row)
 
@@ -140,18 +141,17 @@ class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView):
 class TrainingPointViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = TrainingPoint.objects.all()
     serializer_class = serializers.TrainingPointSerializer
-    parser_classes = [MultiPartParser]
 
     @action(methods=['get'], url_path='export-pdf', detail=False)
     def export_participation_pdf(self, request):
-        training_points = TrainingPoint.objects.select_related('user', 'participation__faculty')
+        training_points = TrainingPoint.objects.select_related('user', 'faculty')
 
         # Group by Faculty -> Class -> Achievement
         grouped_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
         for tp in training_points:
             faculty = tp.faculty.name
-            class_name = tp.participation.class_name
+            class_name = tp.class_name
             achievement = tp.achievement
             grouped_data[faculty][class_name][achievement].append(tp)
 

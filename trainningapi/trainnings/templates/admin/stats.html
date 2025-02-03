@@ -30,13 +30,11 @@
 
     //Data for class
     let student_class = [];
-    let points_class = [];
     let label_class = [];
 
     {% for s in stats_by_class %}
     label_class.push('{{ s.class_name }}')
     student_class.push({{ s.total_students }})
-    points_class.push({{ s.total_points }})
     {% endfor %}
 
     //Achievement data

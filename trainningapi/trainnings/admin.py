@@ -1,11 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.db.models import Count, Avg, Sum
-from django.utils.safestring import mark_safe
-from trainnings.models import (Category, Activity, Participation, Tag, User, Comment, Faculty,
-                               TrainingPoint, MissingPointRequest)
-from django.urls import path
 from django.template.response import TemplateResponse
+from django.urls import path
+from django.utils.safestring import mark_safe
+
+from trainnings.models import (Category, Activity, Participation, User, Comment, Faculty,
+                               TrainingPoint, MissingPointRequest, Tag)
 
 
 class MyAppAdmin(admin.AdminSite):
@@ -24,7 +25,7 @@ class MyAppAdmin(admin.AdminSite):
             .order_by('faculty')
         )
         stats_by_class = (
-            Participation.objects.values('class_name')
+            TrainingPoint.objects.values('class_name')
             .annotate(
                 total_students=Count('id'),
             )
@@ -72,9 +73,9 @@ class ActivityAdmin(admin.ModelAdmin):
 
 
 class ParticipationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'faculty', 'class_name', 'activity',
-                    'is_attended', 'verified', 'registered_at', 'created_date']
-    search_fields = ['user__username', 'class_name']
+    list_display = ['id', 'user', 'faculty', 'activity', 'point',
+                    'achievement', 'is_attended', 'verified', 'created_date']
+    search_fields = ['user', ]
     list_filter = ['is_attended', 'verified', 'created_date']
     ordering = ['created_date']
     readonly_fields = ['display_proof']
@@ -82,18 +83,21 @@ class ParticipationAdmin(admin.ModelAdmin):
     def display_proof(self, proofs):
         return mark_safe(f"<img src='/static/{proofs.image.name}' width = '120' />")
 
+    def activity_max_point(self, participation):
+        return participation.activity.max_point
+
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'email', 'is_staff']
+    list_display = ['username', 'first_name', 'email', 'is_staff']
     list_filter = ['is_staff']
 
 
 class TrainingPointAdmin(admin.ModelAdmin):
-    list_display = ['user', 'point',
-                    'participation', 'achievement', 'created_date']
+    list_display = ['id', 'user', 'point', 'created_date', 'achievement']
     search_fields = ['user__username']
-    list_filter = ['faculty', 'created_date']
+    list_filter = ['created_date', 'user', 'user__username']
     ordering = ['created_date']
+    readonly_fields = ['achievement']
 
     def achievement(self, obj):
         return obj.achievement
@@ -110,13 +114,21 @@ class MissingPointRequestAdmin(admin.ModelAdmin):
         return mark_safe(f"<img src='/static/{missing_proofs.image.name}' width = '120' />")
 
 
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'created_date']
+
+
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'content', 'created_date']
+
+
 # Register your models here.
 admin_site = MyAppAdmin(name='Training App')
-admin_site.index_template = ['admin/index.html']
+admin_site.index_template = ['admin/custom-admin-index.html']
 admin_site.register(Category, CategoryAdmin)
 admin_site.register(Activity, ActivityAdmin)
-admin_site.register(Tag)
-admin_site.register(Comment)
+admin_site.register(Tag, TagAdmin)
+admin_site.register(Comment, CommentAdmin)
 admin_site.register(User, UserAdmin)
 admin_site.register(Faculty, FacultyAdmin)
 admin_site.register(TrainingPoint, TrainingPointAdmin)

@@ -1,4 +1,4 @@
-
+from django.template.context_processors import request
 
 from trainnings.models import (Category, Activity, Participation,
                                Tag, Comment, User, TrainingPoint, MissingPointRequest)
@@ -61,7 +61,7 @@ class ActivitySerializer(BaseSerializer):
     class Meta:
         model = Activity
         fields = ['id', 'title', 'description', 'max_point', 'start_date', 'end_date',
-                  'active', 'category', 'criteria', 'tags']
+                  'active', 'category', 'image', 'tags']
 
 
 class ParticipationSerializer(BaseSerializer):
@@ -70,8 +70,8 @@ class ParticipationSerializer(BaseSerializer):
 
     class Meta:
         model = Participation
-        fields = ['id', 'user', 'activity', 'is_attended', 'verified', 'faculty', 'class_name',
-                  'registered_at']
+        fields = ['id', 'user', 'faculty', 'image',
+                  'activity', 'is_attended', 'verified', 'point']
 
 
 class ActivityDetailsSerializer(ParticipationSerializer):
@@ -96,8 +96,8 @@ class MissingPointRequestSerializer(serializers.ModelSerializer):
     proof_image_url = serializers.SerializerMethodField()
 
     def get_proof_image_url(self, obj):
-        if obj.proof_image:
-            return obj.proof_image.url
+        if obj.image:
+            return obj.image.url
         return None
 
     class Meta:
