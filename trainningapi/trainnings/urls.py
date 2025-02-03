@@ -15,6 +15,6 @@ r.register('missing-point-requests', views.MissingPointRequestViewSet, basename=
 
 urlpatterns = [
     path('', include(r.urls)),
-    path('training-points/export-pdf/',
+    path('admin/training-points/export-pdf/',
          TrainingPointViewSet.as_view({'get': 'export_participation_pdf'}), name='export_training_points_pdf'),
 ]

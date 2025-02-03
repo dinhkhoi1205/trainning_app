@@ -2,8 +2,6 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.db.models import Count, Avg, Sum
 from django.utils.safestring import mark_safe
-from django import forms
-from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from trainnings.models import (Category, Activity, Participation, Tag, User, Comment, Faculty,
                                TrainingPoint, MissingPointRequest)
 from django.urls import path
@@ -12,7 +10,6 @@ from django.template.response import TemplateResponse
 
 class MyAppAdmin(admin.AdminSite):
     site_header = 'Training Point Management'
-    site_title = 'Training Point Admin'
 
     def get_urls(self):
         return [path('training-stats/', self.stats)] + super().get_urls()
@@ -20,7 +17,7 @@ class MyAppAdmin(admin.AdminSite):
     def stats(self, request):
         # Stats training points as faculty, class, achievement
         stats_by_faculty = (
-            Participation.objects.values('faculty')
+            Participation.objects.values('faculty__name')
             .annotate(
                 total_students=Count('id'),
             )
@@ -34,14 +31,13 @@ class MyAppAdmin(admin.AdminSite):
             .order_by('class_name')
         )
 
-        stats_by_achievement = (
-            TrainingPoint.objects.values('achievement')
-            .annotate(
-                total_students=Count('id'),
-                average_points=Avg('point'),
-            )
-            .order_by('achievement')
-        )
+        stats_by_achievement = {
+            "EXCELLENT": TrainingPoint.objects.filter(point__gte=90).count(),
+            "GOOD": TrainingPoint.objects.filter(point__gte=70, point__lt=90).count(),
+            "AVERAGE": TrainingPoint.objects.filter(point__gte=50, point__lt=70).count(),
+            "BELOW_AVERAGE": TrainingPoint.objects.filter(point__gte=30, point__lt=50).count(),
+            "WEAK": TrainingPoint.objects.filter(point__lt=30).count(),
+        }
 
         return TemplateResponse(request, 'admin/stats.html', {
             'stats_by_faculty': stats_by_faculty,
@@ -63,14 +59,6 @@ class FacultyAdmin(admin.ModelAdmin):
     ordering = ['name']
 
 
-class ActivityForm(forms.ModelForm):
-    content = forms.CharField(widget=CKEditorUploadingWidget)
-
-    class Meta:
-        model = Activity
-        fields = '__all__'
-
-
 class ActivityAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'category', 'description',
                     'max_point', 'start_date', 'end_date', 'active']
@@ -78,7 +66,6 @@ class ActivityAdmin(admin.ModelAdmin):
     list_filter = ['category', 'start_date', 'end_date', 'active']
     ordering = ['start_date']
     readonly_fields = ['display_image']
-    form = ActivityForm
 
     def display_image(self, activities):
         return mark_safe(f"<img src='/static/{activities.image.name}' width = '120' />")
@@ -102,13 +89,14 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class TrainingPointAdmin(admin.ModelAdmin):
-    list_display = ['user', 'activity', 'criteria', 'point', 'display_activity_points', 'created_date']
-    search_fields = ['user__username', 'activity__title']
-    list_filter = ['criteria', 'created_date']
+    list_display = ['user', 'point',
+                    'participation', 'achievement', 'created_date']
+    search_fields = ['user__username']
+    list_filter = ['faculty', 'created_date']
     ordering = ['created_date']
 
-    def display_activity_points(self, obj):
-        return obj.activity.max_point
+    def achievement(self, obj):
+        return obj.achievement
 
 
 class MissingPointRequestAdmin(admin.ModelAdmin):
@@ -124,6 +112,7 @@ class MissingPointRequestAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin_site = MyAppAdmin(name='Training App')
+admin_site.index_template = ['admin/index.html']
 admin_site.register(Category, CategoryAdmin)
 admin_site.register(Activity, ActivityAdmin)
 admin_site.register(Tag)

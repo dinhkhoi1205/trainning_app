@@ -1,4 +1,4 @@
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
@@ -16,6 +16,10 @@ class BaseModel(models.Model):
 
 class Faculty(BaseModel):
     name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = 'faculty'
+        verbose_name_plural = 'Faculty'
 
     def __str__(self):
         return self.name
@@ -45,10 +49,10 @@ class Activity(BaseModel):
     description = RichTextField(null=True)  # Activity description
     image = models.ImageField(upload_to='activities/%Y/%m')
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    max_point = models.IntegerField(default=0)
+    max_point = models.IntegerField(default=1, validators=[MaxValueValidator(15), MinValueValidator(1)])
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    criteria = models.CharField(max_length=1, choices=CRITERIA_CHOICES, default='1')  # Choose criteria to add point
+    criteria = models.CharField(max_length=10, choices=CRITERIA_CHOICES, default='1')  # Choose criteria to add point
     tags = models.ManyToManyField('Tag')  # Add tags for activities
 
     def __str__(self):
@@ -62,7 +66,7 @@ class Participation(BaseModel):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     registered_at = models.DateTimeField(auto_now_add=True)
     is_attended = models.BooleanField(default=False)  # Is attend ?
-    image = models.ImageField(upload_to='proofs/%Y/%m')  # Proof have attended
+    image = models.ImageField(upload_to='proofs/%Y/%m', null= True, blank=True)  # Proof have attended
     verified = models.BooleanField(default=False)  # Assistant confirm
     class_name = models.CharField(max_length=50, null=True)
 
@@ -71,21 +75,37 @@ class Participation(BaseModel):
 
 
 class TrainingPoint(BaseModel):
-    ACHIEVEMENT_CHOICES = [
-        ('EXCELLENT', 'Excellent'),
-        ('GOOD', 'Good'),
-        ('AVERAGE', 'Average'),
-        ('BELOW AVERAGE', 'Below average'),
-        ('WEAK', 'Weak'),
-    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    criteria = models.CharField(max_length=1, choices=Activity.CRITERIA_CHOICES)
-    point = models.IntegerField(default=0)
-    achievement = models.CharField(max_length=15, choices=ACHIEVEMENT_CHOICES, null=True, blank=True)
+    faculty = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, blank=True)
+    participation = models.ForeignKey(Participation, on_delete=models.SET_NULL, null=True,
+                                      blank=True)
+    criteria1 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    criteria2 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    criteria3 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    criteria4 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    criteria5 = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    point = models.IntegerField(default=0, validators=[MinValueValidator(1), MaxValueValidator(100)])
+
+
+    class Meta:
+        verbose_name = 'students training point'
+        verbose_name_plural = 'Students Training Point'
 
     def __str__(self):
-        return f"{self.user.username} - {self.activity.title} - {self.criteria}"
+        return f"{self.user.username}"
+
+    @property
+    def achievement(self):
+        if self.point >= 90:
+            return 'EXCELLENT'
+        elif self.point >= 70:
+            return 'GOOD'
+        elif self.point >= 50:
+            return 'AVERAGE'
+        elif self.point >= 30:
+            return 'BELOW AVERAGE'
+        else:
+            return 'WEAK'
 
 
 class MissingPointRequest(BaseModel):
@@ -96,7 +116,7 @@ class MissingPointRequest(BaseModel):
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    proof_image = models.ImageField(upload_to='missing_proofs/%Y/%m')
+    proof_image = models.ImageField(upload_to='missing_proofs/%Y/%m', null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
 
     def __str__(self):

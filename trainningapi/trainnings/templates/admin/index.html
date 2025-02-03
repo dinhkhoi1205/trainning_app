@@ -1,0 +1,10 @@
+{% extends "admin/index.html" %}
+
+{% block sidebar %}
+    {{ block.super }}
+    <div>
+      <div>
+        <a href="{% url 'admin:training-stats' %}"  style="font-size: large; border: 1px solid gray; padding: 4px 8px; border-radius: 4px;">Stat</a>
+      </div>
+    </div>
+{% endblock %}

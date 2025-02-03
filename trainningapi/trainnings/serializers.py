@@ -1,4 +1,4 @@
-from django.template.context_processors import request
+
 
 from trainnings.models import (Category, Activity, Participation,
                                Tag, Comment, User, TrainingPoint, MissingPointRequest)
@@ -28,10 +28,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         data = validated_data.copy()
-        password = data.pop('password', None)
-        u = User(**data)  # Tạo user
-        if password:
-            u.set_password(password)
+        u = User(**data)
+        u.set_password(u.password)
         u.save()
         return u
 
@@ -63,7 +61,7 @@ class ActivitySerializer(BaseSerializer):
     class Meta:
         model = Activity
         fields = ['id', 'title', 'description', 'max_point', 'start_date', 'end_date',
-                  'active', 'category', 'image', 'tags']
+                  'active', 'category', 'criteria', 'tags']
 
 
 class ParticipationSerializer(BaseSerializer):
@@ -76,21 +74,20 @@ class ParticipationSerializer(BaseSerializer):
                   'registered_at']
 
 
-class ParticipationDetailsSerializer(ParticipationSerializer):
-    activity_tags = TagSerializer(many=True, source='activity.tags')
+class ActivityDetailsSerializer(ParticipationSerializer):
+    tags = TagSerializer(many=True)
 
     class Meta:
-        model = ParticipationSerializer.Meta.model
-        fields = ParticipationSerializer.Meta.fields + ['activity_tags']
+        model = ActivitySerializer.Meta.model
+        fields = ActivitySerializer.Meta.fields + ['description', 'tags']
 
 
 class TrainingPointSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    activity = ActivitySerializer()
 
     class Meta:
         model = TrainingPoint
-        fields = ['id', 'user', 'activity', 'criteria', 'point', 'achievement']
+        fields = '__all__'
 
 
 class MissingPointRequestSerializer(serializers.ModelSerializer):
