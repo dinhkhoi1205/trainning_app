@@ -3,17 +3,20 @@ import { StyleSheet } from "react-native";
 export default StyleSheet.create({
     container: {
         flex: 1,
-        padding: 5,
+        // padding: 5,
         // justifyContent: "center",
         // alignItems: "center"
     }, row: {
-        flexDirection: "row"
-    }, wrap: {
+        flexDirection: "row",
         flexWrap: "wrap"
-    }, activity: {
+    },
+     activity: {
         fontSize: 20,
         fontWeight: "bold",
-        color: "blue"
+        color: "blue",
+        textAlign: "center", 
+        marginTop: 30,        
+        alignSelf: "center", 
     }, margin: {
         margin: 5
     }, box: {
