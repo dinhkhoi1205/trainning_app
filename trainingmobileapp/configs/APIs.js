@@ -7,11 +7,8 @@ export const endpoints = {
     'categories' : '/categories/',
     'activities' : '/activities/',
     'participations' : (activityId) => `/activities/${activityId}/participations/`,
-    'activityDetail': (activityId) => `/activities/${activityId}/`,
+    'activity-details': (activityId) => `/activities/${activityId}/`,
     'comments': (activityId) => `/activities/${activityId}/comments/`,
-    'login': '/o/token/',
-    'current-user': '/users/current-user/',
-    'register': '/users/'
 }
 
 export default axios.create({

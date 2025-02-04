@@ -5,7 +5,7 @@ import APIs, { endpoints } from "../../configs/APIs";
 import { ActivityIndicator, Chip, List, Searchbar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 
-const Home = () => {
+const Activity = () => {
     const [categories, setCategories] = useState([]);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -145,7 +145,7 @@ const Home = () => {
                         title={item.title} 
                         description={item.start_date}  
                         left={props => (
-                            <TouchableOpacity onPress={() => nav.navigate('activities', {'activityId': item.id})}>
+                            <TouchableOpacity onPress={() => nav.navigate('ActivityDetail', {activityId: item.id})}>
                                 <Image style={MyStyles.box} source={{ uri: item.image }} />
                             </TouchableOpacity>
                         )}
@@ -159,4 +159,4 @@ const Home = () => {
     );
 }
 
-export default Home;
+export default Activity;
