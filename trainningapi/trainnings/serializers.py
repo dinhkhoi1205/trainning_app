@@ -1,7 +1,7 @@
 from django.template.context_processors import request
 
 from trainnings.models import (Category, Activity, Participation,
-                               Tag, Comment, User, TrainingPoint, MissingPointRequest)
+                               Tag, Comment, User, TrainingPoint, MissingPointRequest, Register,StatusRegister)
 from rest_framework import serializers
 
 
@@ -111,3 +111,26 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    student = TrainingPointSerializer()
+    activity = ActivityDetailsSerializer()
+
+    class Meta:
+        model = Register
+        fields = ['activity', 'student', 'status']
+
+
+class RegisterCheckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Register
+        fields = ['status']
+
+
+class RegisterCurrentSerializer(serializers.ModelSerializer):
+    activity = ParticipationSerializer()
+
+    class Meta:
+        model = Register
+        fields = ['activity']

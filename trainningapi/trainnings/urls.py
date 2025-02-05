@@ -13,6 +13,7 @@ r.register('users', views.UserViewSet, basename='user')
 r.register('comments', views.CommentViewSet, basename='comment')
 r.register('training-points', views.TrainingPointViewSet, basename='training-point')
 r.register('missing-point-requests', views.MissingPointRequestViewSet, basename='missing_point_request')
+r.register('registers', views.RegisterViewSet, basename='registers')
 
 urlpatterns = [
     path('', include(r.urls)),

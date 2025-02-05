@@ -130,6 +130,21 @@ class MissingPointRequest(BaseModel):
         return f"{self.user.username} - {self.activity.title}"
 
 
+class StatusRegister(models.IntegerChoices):
+    REGISTER = 1
+    PARTICIPATE = 2
+    NOT_PARTICIPATE = 3
+
+
+class Register(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    status = models.IntegerField(choices=StatusRegister, default=StatusRegister.REGISTER,null=False)
+
+    class Meta:
+        unique_together = ('user', 'activity')
+
+
 class Tag(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 

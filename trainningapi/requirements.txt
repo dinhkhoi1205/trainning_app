@@ -7,8 +7,10 @@ cloudinary==1.42.1
 cryptography==44.0.0
 Django==5.1.5
 django-ckeditor==6.7.2
+django-cors-headers==4.6.0
 django-js-asset==3.0.1
 django-oauth-toolkit==3.0.1
+django-object-actions==4.3.0
 djangorestframework==3.15.2
 drf-yasg==1.21.8
 idna==3.10

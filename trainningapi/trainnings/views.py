@@ -1,9 +1,10 @@
 from collections import defaultdict
-from rest_framework import viewsets, generics, permissions
+from rest_framework import viewsets, generics, permissions, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from trainnings import serializers, paginator
 from trainnings.models import (Category, Activity,
-                               Participation, User, Comment, TrainingPoint, MissingPointRequest)
+                               Participation, User, Comment, TrainingPoint, MissingPointRequest,Register)
 from rest_framework.decorators import action
 from trainnings import perms
 from reportlab.lib.pagesizes import letter
@@ -11,9 +12,8 @@ from reportlab.pdfgen import canvas
 from django.http import HttpResponse
 
 import csv
-from django.http import JsonResponse
-from django.core.files.storage import default_storage
-from rest_framework.parsers import MultiPartParser
+
+from trainnings.serializers import RegisterSerializer, RegisterCheckSerializer
 
 
 # Create your views here.
@@ -85,7 +85,7 @@ class ParticipationViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Participation.objects.filter(active=True)
     serializer_class = serializers.ParticipationSerializer
     pagination_class = paginator.ItemPaginator
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class ActivityDetailsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
@@ -109,6 +109,20 @@ class ActivityDetailsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
             comments = self.get_object().comment_set.select_related('user').filter(active=True)
 
             return Response(serializers.CommentSerializer(comments, many=True).data)
+
+    @action(methods=['post', 'get'], detail=True, url_path='register')
+    def register_activity(self, request, pk):
+        if request.method == 'POST':
+            register = self.get_object().registers.create(user=request.user.pk)
+            return Response(RegisterSerializer(register).data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'GET':
+            query = Register.objects.filter(event=self.get_object(), user=request.user.pk)
+
+            if query.exists():
+                return Response(RegisterCheckSerializer(query, many=True).data)
+
+            return Response([{"status": 0}])
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
@@ -228,3 +242,8 @@ class MissingPointRequestViewSet(viewsets.ViewSet, generics.ListCreateAPIView):
         if user.is_staff:
             return MissingPointRequest.objects.all()  # Admin see all request
         return MissingPointRequest.objects.filter(user=user)  # Student can see their own request
+
+
+class RegisterViewSet(viewsets.ViewSet, generics.UpdateAPIView):
+    queryset = Register.objects.all()
+    serializer_class = serializers.RegisterSerializer
