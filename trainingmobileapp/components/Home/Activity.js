@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import APIs, { endpoints } from "../../configs/APIs";
 import { ActivityIndicator, Chip, List, Searchbar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import moment from "moment";
+
 
 const Activity = () => {
     const [categories, setCategories] = useState([]);
@@ -143,7 +145,7 @@ const Activity = () => {
                 renderItem={({ item }) => (
                     <List.Item 
                         title={item.title} 
-                        description={item.start_date}  
+                        description={moment(item.start_date).format("MMMM Do YYYY")}
                         left={props => (
                             <TouchableOpacity onPress={() => nav.navigate('ActivityDetail', {'activityId': item.id})}>
                                 <Image style={MyStyles.box} source={{ uri: item.image }} />

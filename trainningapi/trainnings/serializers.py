@@ -76,7 +76,7 @@ class ParticipationSerializer(BaseSerializer):
 
 class ActivityDetailsSerializer(ParticipationSerializer):
     tags = TagSerializer(many=True)
-
+    category = CategorySerializer()
     class Meta:
         model = ActivitySerializer.Meta.model
         fields = ActivitySerializer.Meta.fields + ['description', 'tags']

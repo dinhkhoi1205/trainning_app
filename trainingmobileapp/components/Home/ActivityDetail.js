@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import APIs, { authApis, endpoints } from "../../configs/APIs";
 import { ScrollView, Text, Image, View, Alert } from "react-native";
-import { ActivityIndicator, Card, List, Button } from "react-native-paper";
+import { ActivityIndicator, Card, List, Button, TextInput } from "react-native-paper";
 import RenderHTML from "react-native-render-html";
 import moment from "moment";
 import MyStyles from "../../styles/MyStyles";
-import { useFocusEffect } from "@react-navigation/native";
+
 
 const ActivityDetail = ({route}) => {
     const activityId = route.params?.activityId;
     const [activity_details, setActivityDetails] = useState(null);
     const [comments, setComments] = useState(null);
     const [isRegistered, setIsRegistered] = useState(false); //Check if registred
+    const [newComment, setNewComment] = useState('');
 
     const loadActivityDetails = async () =>{
         let res = await APIs.get(endpoints['activity_details'](activityId));
@@ -38,30 +39,30 @@ const ActivityDetail = ({route}) => {
         try {
             const api = await authApis();
     
-            // Lấy thông tin user hiện tại
+            // Take user ID
             const userResponse = await api.get(endpoints.current_user);
             if (!userResponse.data || !userResponse.data.id) {
-                console.error("Lỗi: Không lấy được ID user!");
+                console.error("Error: Cannot take user ID!");
                 return;
             }
     
             const userId = userResponse.data.id;
             console.log("User ID:", userId); // Debug user ID
     
-            // Kiểm tra danh sách đăng ký
-            const response = await api.get(endpoints.activity_register(activityId));
-            console.log("Danh sách người đăng ký:", response.data); // Debug danh sách đăng ký
+            // Check register list activity
+            const response = await api.get(endpoints['activity_register'](activityId));
+            console.log("Activity register list", response.data); 
     
             if (response.data && response.data.length > 0) {
-                // Kiểm tra xem user hiện tại có trong danh sách không
+                // Check if user in register activity
                 const isUserRegistered = response.data.some(reg => reg.user && reg.user.id === userId);
-                console.log("Trạng thái đăng ký:", isUserRegistered); // Debug trạng thái đăng ký
+                console.log("Status", isUserRegistered); 
                 setIsRegistered(isUserRegistered);
             } else {
                 setIsRegistered(false);
             }
         } catch (error) {
-            console.error("Lỗi khi kiểm tra trạng thái đăng ký:", error);
+            console.error("Error when check status:", error);
         }
     }
 
@@ -74,7 +75,7 @@ const ActivityDetail = ({route}) => {
             }
     
             const api = await authApis();
-            const response = await api.post(endpoints.activity_register(activityId));
+            const response = await api.post(endpoints['activity_register'](activityId));
     
             if (response.status === 201) {
                 Alert.alert("Success", "You have signed successfully!");
@@ -85,6 +86,40 @@ const ActivityDetail = ({route}) => {
         } catch (error) {
             console.error("Error when sign activity", error);
             Alert.alert("Error", "Can not join activity");
+        }
+    };
+
+
+    const handleSubmitComment = async () => {
+        if (!newComment.trim()) {
+            Alert.alert("Error", "Please enter a comment.");
+            return;
+        }
+    
+        try {
+            const api = await authApis();
+            const response = await api.post(endpoints['post_comment'](activityId), {
+                content: newComment.trim(),
+            });
+    
+            if (response.status === 201) {
+                Alert.alert("Success", "Your comment has been posted.");
+                setNewComment('');  // Clear input after successful post
+    
+                // Cập nhật comments trực tiếp thay vì gọi loadComments()
+                const newCommentData = {
+                    id: response.data.id,  // Giả sử server trả về ID của comment
+                    content: newComment.trim(),
+                    created_date: moment().toISOString(),
+                    user: { avatar: 'URL_OF_AVATAR' } // Dữ liệu người dùng, có thể lấy từ server
+                };
+                setComments(prevComments => [newCommentData, ...prevComments]);  // Thêm comment mới vào đầu danh sách
+            } else {
+                Alert.alert("Error", "There was an issue posting your comment.");
+            }
+        } catch (error) {
+            console.error("Error posting comment", error);
+            Alert.alert("Error", "There was an error submitting your comment.");
         }
     };
 
@@ -116,7 +151,14 @@ const ActivityDetail = ({route}) => {
 
                         <Text>Status: {activity_details.active ? "Active" : "Inactive"}</Text>
 
-                        <Text>Category: {activity_details.category}</Text>
+                        {activity_details.categories && activity_details.categories.length > 0 && (
+                            <View style={{ marginTop: 10 }}>
+                                <Text>Category:</Text>
+                                {activity_details.categories.map((category, index) => (
+                                    <Text key={index}>{category.name}</Text>
+                                ))}
+                            </View>
+                        )}
 
                         {activity_details.tags && activity_details.tags.length > 0 && (
                             <View style={{ marginTop: 10 }}>
@@ -133,14 +175,33 @@ const ActivityDetail = ({route}) => {
                                 disabled={isRegistered}
                                 style={{ marginTop: 10 }}
                             >
+                                Join activity
                             </Button>
+
                     </Card.Content>
-                    
                     
                 </Card>
             </>}
 
             <View>
+            <View style={{ marginTop: 20 }}>
+                <TextInput
+                    label="Write a comment"
+                    value={newComment}
+                    onChangeText={setNewComment}
+                    mode="outlined"
+                    multiline
+                    numberOfLines={3}
+                    style={{ marginBottom: 10 }}
+                />
+                <Button
+                    mode="contained"
+                    onPress={handleSubmitComment}
+                    disabled={!newComment.trim()}
+                >
+                    Post Comment
+                </Button>
+            </View>
             <View>
                 {comments === null ? <ActivityIndicator /> : <>
                     {comments.map(c => (

@@ -15,6 +15,7 @@ export const endpoints = {
     'current_user': '/users/current-user/',
     'register': '/users/',
     'activity_register': (activityId) => `/activity-details/${activityId}/register/`,
+    'post_comment' : (activityId) => `/activity-details/${activityId}/comments/`
 }
 
 export const authApis = async () => {
