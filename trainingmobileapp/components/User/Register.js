@@ -5,18 +5,31 @@ import { Image, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, To
 import { View } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from "@react-navigation/native";
+import APIs,{endpoints} from "../../configs/APIs";
 
 const Register = () => {
-    const [user, setUser] = useState({});
-
+    const [user, setUser] = useState({
+        "username": "",
+        "password": ""
+    });
     const [loading,setLoading] = useState(false);
-
+    const [avatar, setAvatar] = useState();
+    const nav = useNavigation();
+    const updateUser = (value,field) => {
+        setUser({...user, [field]: value});
+    }
     const users = {
         "first_name": {
-            "title": "Name",
+            "title": "First Name",
             "field": "first_name",
             "secure": false,
             "icon": "text"
+        },
+        "last_name": {
+            "title": "Last Name",
+            "field": "last_name",
+            "icon": "text",
+            "secure": false
         },
         "username" : {
             "title" : "Username",
@@ -37,14 +50,6 @@ const Register = () => {
         }
     }
 
-    const [avatar, setAvatar] = useState();
-    const nav = useNavigation();
-    const [err, setErr] = useState(false);
-
-    const updateUser = (value,field) => {
-        setUser({...user, [field]: value});
-    }
-
     const pickImage = async () => {
         let { status } =await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -52,59 +57,48 @@ const Register = () => {
         } else {
         const result =await ImagePicker.launchImageLibraryAsync();
         if (!result.canceled)
-            setAvatar(result.assets[0])
+            setAvatar(result.assets[0]);
         }
     }
 
     const register = async () => {
-        if (user.password !== user.confirm)
-                setErr(true);
-        else {
-            setErr(false);
-            let form = new FormData();
+        
+        setLoading(true);
+        try {
+            const form = new FormData();
 
-            for (let key in user)
-                if (key !== 'confirm') {
-                    if (key === 'avatar') {
-                        form.append('avatar', {
-                            uri: user.avatar.uri,
-                            name: user.avatar.fileName,
-                            type: user.avatar.type
-                        })
-                    } else
-                        form.append(key, user[key]);
+            for (let k in user)
+                if (k !== 'confirm')
+                    form.append(k, user[k]);
+
+            console.info(form);
+
+            form.append('avatar', {
+                uri: avatar.uri,
+                name: avatar.fileName || avatar.uri.split('/').pop(),
+                type: avatar.type || 'image/jpeg'
+            });
+
+            
+            await APIs.post(endpoints['register'], form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
                 }
+            });
 
-            console.info(form)
-
-                
-            setLoading(true);
-            try {
-                let res = await APIs.post(endpoints['register'], form, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                console.info(res.data)
-                nav.navigate("login");
-            } catch (ex) {
-                console.error(JSON.stringify(ex));
-            } finally {
-                setLoading(false);
-            }
+            nav.navigate("login");
+        } catch (ex) {
+            console.error("Registration error:", ex);
+        } finally {
+            setLoading(false);
         }
     }
-
     return (
     <View style={MyStyles.container}>
         <KeyboardAvoidingView 
         behavior={Platform.OS === 'android' ? 'padding' : 'height'} 
         style={{ flex: 1 }}
         >
-                    <HelperText type="error" visible={err}>
-                        The password not match
-                    </HelperText>
-
                     {Object.values(users).map(u => (
                         <TextInput 
                             key={u.field} 
@@ -112,7 +106,7 @@ const Register = () => {
                             placeholder={u.title} 
                             style={MyStyles.margin} 
                             secureTextEntry={u.secure}
-                            value={user[u.field]} 
+                            value={user[u.field] || ""} 
                             onChangeText={t => updateUser(t, u.field)}
                         />
                     ))}
@@ -120,7 +114,7 @@ const Register = () => {
                         <Text style={MyStyles.margin}>Choose profile image</Text>
                     </TouchableOpacity>
 
-                        {avatar ? <Image source={{ uri: avatar.uri }}style={{ width: 100, height: 100 }} /> : ""}
+                    {avatar ? <Image source={{ uri: avatar.uri }} style={{ width: 100, height: 100 }} /> : ""}
 
                     <Button onPress={register} loading={loading} icon="account-check" mode="contained">Sign up</Button>
 

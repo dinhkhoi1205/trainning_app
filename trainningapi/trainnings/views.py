@@ -112,12 +112,16 @@ class ActivityDetailsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
 
     @action(methods=['post', 'get'], detail=True, url_path='register')
     def register_activity(self, request, pk):
+        activity = self.get_object()
         if request.method == 'POST':
-            register = self.get_object().registers.create(user=request.user.pk)
+            register = activity.register_set.create(user=request.user)
             return Response(RegisterSerializer(register).data, status=status.HTTP_201_CREATED)
 
         if request.method == 'GET':
-            query = Register.objects.filter(event=self.get_object(), user=request.user.pk)
+            query = Register.objects.filter(activity=activity, user=request.user)
+
+            if query.exists():
+                return Response(RegisterCheckSerializer(query, many=True).data)
 
             if query.exists():
                 return Response(RegisterCheckSerializer(query, many=True).data)

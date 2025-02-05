@@ -13,7 +13,8 @@ export const endpoints = {
     'comments': (activityId) => `/activity-details/${activityId}/comments/`,
     'login': '/o/token/',
     'current_user': '/users/current-user/',
-    'register': '/users/'
+    'register': '/users/',
+    'activity_register': (activityId) => `/activity-details/${activityId}/register/`,
 }
 
 export const authApis = async () => {

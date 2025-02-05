@@ -45,7 +45,7 @@ export default function App() {
     <NavigationContainer>
         <MyUserContext.Provider value={user}>
           <MyDispatchContext.Provider value={dispatch}>
-            <TabNavigator user={user}/>
+            <TabNavigator/>
           </MyDispatchContext.Provider>
         </MyUserContext.Provider>
       </NavigationContainer>

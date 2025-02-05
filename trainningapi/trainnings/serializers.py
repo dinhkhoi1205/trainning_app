@@ -114,12 +114,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    student = TrainingPointSerializer()
+    user = UserSerializer()
     activity = ActivityDetailsSerializer()
 
     class Meta:
         model = Register
-        fields = ['activity', 'student', 'status']
+        fields = ['activity', 'user', 'status']
 
 
 class RegisterCheckSerializer(serializers.ModelSerializer):
