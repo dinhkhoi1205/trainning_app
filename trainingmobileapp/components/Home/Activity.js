@@ -145,7 +145,7 @@ const Activity = () => {
                         title={item.title} 
                         description={item.start_date}  
                         left={props => (
-                            <TouchableOpacity onPress={() => nav.navigate('ActivityDetail', {activityId: item.id})}>
+                            <TouchableOpacity onPress={() => nav.navigate('ActivityDetail', {'activityId': item.id})}>
                                 <Image style={MyStyles.box} source={{ uri: item.image }} />
                             </TouchableOpacity>
                         )}
