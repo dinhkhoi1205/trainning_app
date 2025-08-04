@@ -1,6 +1,4 @@
-Dưới đây là phần **README** được viết lại hoàn chỉnh và chuyên nghiệp hơn cho **website quản lý học tập** bạn đã thực hiện bằng **HTML, CSS, React Native và Python Django**. Phần này tách biệt với README cho food ordering app, đồng thời bạn có thể điều chỉnh thêm ảnh hoặc thông tin sau này nếu cần.
 
----
 
 <a id="readme-top"></a>
 
@@ -34,14 +32,14 @@ A responsive and functional web-based platform for managing study activities, bu
 
 ## 📌 About The Project
 
-The **Learning Management Website** allows users (students and teachers) to organize, track, and interact with study materials and class activities. It is aimed at improving the online study experience through intuitive features and user interface.
+The **Learning Management Website** allows users to organize, track, and interact with study materials. It is aimed at improving the online study experience through intuitive features and user interface.
 
 Key functionalities include:
 
-* Student/Teacher authentication
-* Class creation and joining via unique codes
+* User authentication
+* Class creation 
 * Assignment and file upload features
-* Progress tracking and dashboards
+* Comment, like the course
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -61,12 +59,11 @@ Key functionalities include:
 
 ## 🌟 Features
 
-* **User Authentication**: Students and teachers can register and log in securely
-* **Classroom Management**: Teachers can create classes, students can join with a code
-* **Assignments**: Teachers can post assignments and resources; students can submit their work
+* **User Authentication**: Students can register and log in securely
+* **Classroom Management**: Admin can create classes, students can join by press the button
+* **Assignments**: Admin can post assignments and resources; students can submit their work
 * **File Uploading**: Includes image/document upload functionality
-* **Progress Tracking**: Visual dashboards for users to track their progress
-* **Responsive UI**: Optimized for both web and mobile usage
+* **Responsive UI**: Optimized for mobile usage
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -88,7 +85,7 @@ To get a local copy up and running follow these simple steps.
 1. Clone the repo:
 
    ```bash
-   git clone https://github.com/yourusername/learning-management-app.git
+   git clone https://github.com/dinhkhoi2021/training_app.git
    cd learning-management-app
    ```
 
