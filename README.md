@@ -86,7 +86,7 @@ To get a local copy up and running follow these simple steps.
 
    ```bash
    git clone https://github.com/dinhkhoi2021/training_app.git
-   cd learning-management-app
+   cd training_app
    ```
 
 2. Create and activate a virtual environment (optional but recommended):
@@ -128,12 +128,10 @@ To get a local copy up and running follow these simple steps.
 ## 💻 Usage
 
 * Visit `http://localhost:8000/` to access the app
-* Register as a student or teacher
+* Register as a student 
 * Explore the dashboard, join or create classes
 * Upload and view study resources
-* Track your assignments and submissions
 
-**Screenshots** (optional): You can add interface screenshots here later to better illustrate.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -142,7 +140,6 @@ To get a local copy up and running follow these simple steps.
 ## 📬 Contact
 
 * 📧 Gmail: [dinhkhoi2021@gmail.com](mailto:dinhkhoi2021@gmail.com)
-* 🔗 GitHub Repository: \[Insert your GitHub repo link here]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
